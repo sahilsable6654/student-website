@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Student Details - Student Success Predictor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .student-form {
+        max-width: 600px;
+        margin: 2rem auto;
+    }
+
+    .required-field::after {
+        content: "*";
+        color: blue;
+        margin-left: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <img src="{{ url_for('static', filename='college_logo.png') }}" alt="College Logo" class="college-logo mb-3">
+        <h1 class="college-name">S.R.E.S. Sanjivani College of Engineering</h1>
+        <h2 class="h4 mt-3">Student Details</h2>
+    </div>
+
+    <div class="student-form">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">Enter Your Details</h3>
+                <form method="POST" action="{{ url_for('student_details') }}">
+                    <div class="mb-3">
+                        <label for="name" class="form-label required-field">Full Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required 
+                               value="{{ student.name or '' }}" placeholder="Enter your full name">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="roll_number" class="form-label required-field">Roll Number</label>
+                        <input type="text" class="form-control" id="roll_number" name="roll_number" required 
+                               value="{{ student.roll_number or '' }}" placeholder="Enter your roll number">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="branch" class="form-label required-field">Branch</label>
+                        <select class="form-select" id="branch" name="branch" required>
+                            <option value="" {% if not student.branch %}selected{% endif %}>Select your branch</option>
+                            <option value="Computer Engineering" {% if student.branch == 'Computer Engineering' %}selected{% endif %}>Computer Engineering</option>
+                            <option value="Information Technology" {% if student.branch == 'Information Technology' %}selected{% endif %}>Information Technology</option>
+                            <option value="Electronics & Telecom" {% if student.branch == 'Electronics & Telecom' %}selected{% endif %}>Electronics & Telecom</option>
+                            <option value="Mechanical Engineering" {% if student.branch == 'Mechanical Engineering' %}selected{% endif %}>Mechanical Engineering</option>
+                            <option value="Civil Engineering" {% if student.branch == 'Civil Engineering' %}selected{% endif %}>Civil Engineering</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="year" class="form-label required-field">Year</label>
+                        <select class="form-select" id="year" name="year" required>
+                            <option value="" {% if not student.year %}selected{% endif %}>Select your year</option>
+                            <option value="First Year" {% if student.year == 'First Year' %}selected{% endif %}>First Year</option>
+                            <option value="Second Year" {% if student.year == 'Second Year' %}selected{% endif %}>Second Year</option>
+                            <option value="Third Year" {% if student.year == 'Third Year' %}selected{% endif %}>Third Year</option>
+                            <option value="Fourth Year" {% if student.year == 'Fourth Year' %}selected{% endif %}>Fourth Year</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label required-field">Email Address</label>
+                        <input type="email" class="form-control" id="email" name="email" required 
+                               value="{{ student.email or '' }}" placeholder="Enter your email address">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Phone Number</label>
+                        <input type="tel" class="form-control" id="phone" name="phone" 
+                               value="{{ student.phone or '' }}" placeholder="Enter your phone number">
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">Save Details</button>
+                        <a href="{{ url_for('home') }}" class="btn btn-outline-secondary">Back to Home</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

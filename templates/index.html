@@ -1,0 +1,423 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Student Success Predictor{% endblock %}
+
+{% block extra_css %}
+<style>
+    .prediction-form {
+        max-width: 800px;
+        margin: 2rem auto;
+    }
+
+    .result-card {
+        display: none;
+        margin-top: 2rem;
+    }
+
+    .recommendations {
+        margin-top: 1rem;
+    }
+
+    .recommendation-item {
+        margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 0.25rem;
+        background-color: var(--bg-secondary);
+    }
+
+    .metrics-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-top: 1rem;
+    }
+
+    .metric-card {
+        padding: 1rem;
+        border-radius: 0.5rem;
+        background-color: var(--bg-secondary);
+        text-align: center;
+    }
+
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--accent-color);
+    }
+
+    .metric-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .charts-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .chart-wrapper {
+        background-color: var(--card-bg);
+        border-radius: 0.5rem;
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+    }
+
+    .chart-title {
+        text-align: center;
+        margin-bottom: 1rem;
+        color: var(--text-primary);
+    }
+
+    .student-info {
+        background-color: var(--card-bg);
+        border: 1px solid var(--border-color);
+        border-radius: 0.5rem;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .student-info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
+    .student-info-item {
+        padding: 0.5rem;
+    }
+
+    .student-info-label {
+        font-weight: bold;
+        color: var(--text-secondary);
+        margin-bottom: 0.25rem;
+    }
+
+    .student-info-value {
+        color: var(--text-primary);
+    }
+
+    .edit-details-btn {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="text-center mb-5">
+        <img src="{{ url_for('static', filename='college_logo.png') }}" alt="College Logo" class="college-logo mb-3">
+        <h1 class="college-name">S.R.E.S. Sanjivani College of Engineering</h1>
+        <h2 class="h4 mt-3">Student Success Predictor</h2>
+        <div class="mt-3">
+            Welcome, {{ username }}! 
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-danger ms-2">Logout</a>
+        </div>
+    </div>
+
+    {% if student %}
+    <div class="student-info position-relative">
+        <h3 class="h5 mb-4">Student Information</h3>
+        <a href="{{ url_for('student_details') }}" class="btn btn-outline-primary btn-sm edit-details-btn">
+            <i class="fas fa-edit"></i> Edit Details
+        </a>
+        <div class="student-info-grid">
+            <div class="student-info-item">
+                <div class="student-info-label">Name</div>
+                <div class="student-info-value">{{ student.name }}</div>
+            </div>
+            <div class="student-info-item">
+                <div class="student-info-label">Roll Number</div>
+                <div class="student-info-value">{{ student.roll_number }}</div>
+            </div>
+            <div class="student-info-item">
+                <div class="student-info-label">Branch</div>
+                <div class="student-info-value">{{ student.branch }}</div>
+            </div>
+            <div class="student-info-item">
+                <div class="student-info-label">Year</div>
+                <div class="student-info-value">{{ student.year }}</div>
+            </div>
+            <div class="student-info-item">
+                <div class="student-info-label">Email</div>
+                <div class="student-info-value">{{ student.email }}</div>
+            </div>
+            <div class="student-info-item">
+                <div class="student-info-label">Phone</div>
+                <div class="student-info-value">{{ student.phone or 'Not provided' }}</div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center mb-4">
+        Please <a href="{{ url_for('student_details') }}" class="alert-link">add your student details</a> to get started.
+    </div>
+    {% endif %}
+
+    <div class="prediction-form">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title text-center mb-4">Enter Student Details</h3>
+                <form id="predictionForm" onsubmit="return false;">
+                    <div class="mb-3">
+                        <label for="study_hours" class="form-label">Study Hours per Week</label>
+                        <input type="number" class="form-control" id="study_hours" required min="0" max="168" step="0.5">
+                    </div>
+                    <div class="mb-3">
+                        <label for="attendance" class="form-label">Attendance Percentage</label>
+                        <input type="number" class="form-control" id="attendance" required min="0" max="100" step="0.1">
+                    </div>
+                    <div class="mb-3">
+                        <label for="past_scores" class="form-label">Past Scores Average</label>
+                        <input type="number" class="form-control" id="past_scores" required min="0" max="100" step="0.1">
+                    </div>
+                    <button onclick="predict()" class="btn btn-primary w-100">Predict Success</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="resultCard" class="card result-card">
+            <div class="card-body">
+                <h4 class="card-title text-center mb-4">Prediction Results</h4>
+                <div id="predictionMessage" class="alert alert-info text-center"></div>
+                
+                <div class="metrics-container">
+                    <div class="metric-card">
+                        <div class="metric-value" id="studyHoursMetric">-</div>
+                        <div class="metric-label">Study Hours</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="attendanceMetric">-</div>
+                        <div class="metric-label">Attendance</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value" id="scoresMetric">-</div>
+                        <div class="metric-label">Past Scores</div>
+                    </div>
+                </div>
+
+                <div class="charts-container">
+                    <div class="chart-wrapper">
+                        <h5 class="chart-title">Success Probability</h5>
+                        <canvas id="probabilityChart"></canvas>
+                    </div>
+                    <div class="chart-wrapper">
+                        <h5 class="chart-title">Performance Metrics</h5>
+                        <canvas id="metricsChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="recommendations mt-4">
+                    <h5>Recommendations:</h5>
+                    <div id="recommendationsList"></div>
+                </div>
+
+                <div class="text-center mt-4">
+                    <button onclick="downloadReport()" class="btn btn-success">
+                        <i class="fas fa-download"></i> Download Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let probabilityChart = null;
+let metricsChart = null;
+let lastPredictionData = null;
+
+function createProbabilityChart(probability) {
+    if (probabilityChart) {
+        probabilityChart.destroy();
+    }
+
+    const ctx = document.getElementById('probabilityChart').getContext('2d');
+    probabilityChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Success Probability', 'Failure Probability'],
+            datasets: [{
+                data: [probability * 100, (1 - probability) * 100],
+                backgroundColor: [
+                    'rgba(40, 167, 69, 0.8)',
+                    'rgba(220, 53, 69, 0.8)'
+                ],
+                borderColor: [
+                    'rgba(40, 167, 69, 1)',
+                    'rgba(220, 53, 69, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+function createMetricsChart(study_hours, attendance, past_scores) {
+    if (metricsChart) {
+        metricsChart.destroy();
+    }
+
+    const ctx = document.getElementById('metricsChart').getContext('2d');
+    metricsChart = new Chart(ctx, {
+        type: 'radar',
+        data: {
+            labels: ['Study Hours', 'Attendance', 'Past Scores'],
+            datasets: [{
+                label: 'Current Performance',
+                data: [
+                    (study_hours / 10) * 100, // Scale study hours to percentage
+                    attendance,
+                    past_scores
+                ],
+                backgroundColor: 'rgba(13, 110, 253, 0.2)',
+                borderColor: 'rgba(13, 110, 253, 1)',
+                borderWidth: 2,
+                pointBackgroundColor: 'rgba(13, 110, 253, 1)'
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                r: {
+                    beginAtZero: true,
+                    max: 100,
+                    ticks: {
+                        stepSize: 20
+                    }
+                }
+            },
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+}
+
+async function predict() {
+    const study_hours = parseFloat(document.getElementById('study_hours').value);
+    const attendance = parseFloat(document.getElementById('attendance').value);
+    const past_scores = parseFloat(document.getElementById('past_scores').value);
+
+    try {
+        const response = await fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                study_hours,
+                attendance,
+                past_scores
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+            throw new Error(result.error);
+        }
+
+        // Store the prediction data for the report
+        lastPredictionData = result;
+
+        // Update metrics
+        document.getElementById('studyHoursMetric').textContent = study_hours;
+        document.getElementById('attendanceMetric').textContent = attendance + '%';
+        document.getElementById('scoresMetric').textContent = past_scores;
+
+        // Update prediction message
+        const messageElement = document.getElementById('predictionMessage');
+        messageElement.textContent = `Success Level: ${result.message}`;
+        messageElement.className = `alert ${result.success ? 'alert-success' : 'alert-warning'} text-center`;
+
+        // Update recommendations
+        const recommendationsHtml = result.recommendations
+            .map(rec => `<div class="recommendation-item">${rec}</div>`)
+            .join('');
+        document.getElementById('recommendationsList').innerHTML = recommendationsHtml;
+
+        // Create/update charts
+        createProbabilityChart(result.probability);
+        createMetricsChart(study_hours, attendance, past_scores);
+
+        // Show result card
+        document.getElementById('resultCard').style.display = 'block';
+    } catch (error) {
+        alert('Error: ' + error.message);
+    }
+}
+
+async function downloadReport() {
+    if (!lastPredictionData) {
+        alert('Please make a prediction first.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/generate_report', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(lastPredictionData)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            const errorMessage = errorData.error || 'Failed to generate report';
+            
+            // Create a more user-friendly error message
+            if (errorMessage.includes('wkhtmltopdf')) {
+                const message = `Error: ${errorMessage}\n\n` +
+                    'To fix this:\n' +
+                    '1. Download wkhtmltopdf from https://wkhtmltopdf.org/downloads.html\n' +
+                    '2. Install it on your system\n' +
+                    '3. Try generating the report again';
+                alert(message);
+            } else {
+                alert(`Error: ${errorMessage}`);
+            }
+            return;
+        }
+
+        // Create a blob from the PDF stream
+        const blob = await response.blob();
+        
+        // Create a link to download the PDF
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `student_prediction_report_${new Date().toISOString().slice(0,19).replace(/[-:]/g, '')}.pdf`;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+    } catch (error) {
+        console.error('Report generation error:', error);
+        alert('Error generating report: ' + error.message);
+    }
+}
+
+// Initialize charts with empty data
+document.addEventListener('DOMContentLoaded', () => {
+    createProbabilityChart(0);
+    createMetricsChart(0, 0, 0);
+});
+</script>
+{% endblock %} 

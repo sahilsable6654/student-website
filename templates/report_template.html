@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Student Success Prediction Report</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 20px;
+        }
+        .college-name {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .report-title {
+            font-size: 20px;
+            color: #666;
+        }
+        .section {
+            margin-bottom: 30px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .info-value {
+            margin-top: 5px;
+        }
+        .metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .metric-card {
+            text-align: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .metric-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .recommendations {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .recommendation-item {
+            margin-bottom: 10px;
+            padding-left: 20px;
+            position: relative;
+        }
+        .recommendation-item::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #007bff;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="college-name">S.R.E.S. Sanjivani College of Engineering</div>
+        <div class="report-title">Student Success Prediction Report</div>
+        <div style="margin-top: 10px;">Generated on: {{ date }}</div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Student Information</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Name</div>
+                <div class="info-value">{{ student.name }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Roll Number</div>
+                <div class="info-value">{{ student.roll_number }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Branch</div>
+                <div class="info-value">{{ student.branch }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Year</div>
+                <div class="info-value">{{ student.year }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Performance Metrics</div>
+        <div class="metrics">
+            <div class="metric-card">
+                <div class="metric-value">{{ prediction_data.metrics.study_hours }}</div>
+                <div class="metric-label">Study Hours/Week</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ prediction_data.metrics.attendance }}%</div>
+                <div class="metric-label">Attendance</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-value">{{ prediction_data.metrics.past_scores }}%</div>
+                <div class="metric-label">Past Scores</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Prediction Results</div>
+        <div class="info-grid">
+            <div class="info-item">
+                <div class="info-label">Success Level</div>
+                <div class="info-value">{{ prediction_data.message }}</div>
+            </div>
+            <div class="info-item">
+                <div class="info-label">Success Probability</div>
+                <div class="info-value">{{ "%.1f"|format(prediction_data.probability * 100) }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">Recommendations</div>
+        <div class="recommendations">
+            {% for recommendation in prediction_data.recommendations %}
+            <div class="recommendation-item">{{ recommendation }}</div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="footer">
+        This report is generated automatically by the Student Success Predictor system.
+        The predictions are based on the provided data and should be used as guidance only.
+    </div>
+</body>
+</html> 
